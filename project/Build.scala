@@ -21,4 +21,17 @@ object Build extends Build {
       ).map("import " + _ + "\n").mkString
     ) : _*
   )
+
+  lazy val lispyExample = Project(
+    id = "lispy-example",
+    base = file("example")
+  ).settings(
+    baseSettings  ++ seq(
+      initialCommands in console += Seq(
+        "com.github.hexx.lispy._",
+        "Example._"
+      ).map("import " + _ + "\n").mkString,
+      initialCommands in console += "def parse(s: String) = Parser.parseAll(Parser.exp, s).get"
+    ) : _*
+  ).dependsOn(lispy)
 }

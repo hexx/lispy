@@ -25,7 +25,7 @@ object Eval {
       val (lam, env1) = eval(e, env)
       val (rs, env2) = es.foldLeft(List(): List[Any], env1) { case ((rs, env1), exp1) =>
         val (r, env2) = eval(exp1, env1)
-        ((r :: rs), env2)
+        ((rs :+ r), env2)
       }
       (lam.asInstanceOf[List[Any] => Any](rs), env2)
   }
