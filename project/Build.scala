@@ -22,6 +22,20 @@ object Build extends Build {
     ) : _*
   )
 
+  lazy val lispyRhino = Project(
+    id = "lispy-rhino",
+    base = file("rhino")
+  ).settings(
+    baseSettings  ++ seq(
+      libraryDependencies ++= Seq(
+        "org.mozilla" % "rhino" % "1.7R4"
+      ),
+      initialCommands in console += Seq(
+        "com.github.hexx.lispy.rhino._"
+      ).map("import " + _ + "\n").mkString
+    ) : _*
+  ).dependsOn(lispy)
+
   lazy val lispyExample = Project(
     id = "lispy-example",
     base = file("example")
