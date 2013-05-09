@@ -7,6 +7,16 @@ import org.mozilla.javascript.{Parser => RParser}
 import org.mozilla.javascript.ast._
 
 package object rhino {
+  val infixTable = Map(
+    "+"  -> Token.ADD,
+    "*"  -> Token.MUL,
+    "-"  -> Token.SUB,
+    "==" -> Token.EQ,
+    "<"  -> Token.LT,
+    "<=" -> Token.LE,
+    ">"  -> Token.GT,
+    ">=" -> Token.GE)
+
   def expToJS(exp: Exp): AstNode = exp match {
     case Var(v) =>
       val js = new Name
@@ -42,17 +52,39 @@ package object rhino {
       js.addVariable(vi)
       js
     case Lambda(vs, e) =>
+      def encloseBody(b: Exp) = b match {
+        case Begin(es) =>
+          Begin((es.reverse match {
+            case e1 :: es1 => Proc(Var("return"), List(e1)) :: es1
+            case Nil => Nil
+          }).reverse)
+        case _ => Begin(List(Proc(Var("return"), List(b))))
+      }
       val js = new FunctionNode
       js.setParams(vs.map(expToJS).asJava)
-      js.setBody(expToJS(e))
+      js.setBody(expToJS(encloseBody(e)))
       js
     case Begin(es) =>
       val js = new Block
       es.foreach(e => js.addStatement(expToJS(e)))
       js
-    // case Proc(e, es) =>
-    //   val js = new FunctionCall
-    //   js
+    case Proc(e, es) =>
+      def infixToken(o: Exp) = o match {
+        case Var(v) => infixTable.get(v)
+        case _ => None
+      }
+      infixToken(e).map { t =>
+        val js = new InfixExpression
+        js.setOperator(t)
+        js.setLeft(expToJS(es(0)))
+        js.setRight(expToJS(es(1)))
+        js
+      } getOrElse {
+        val js = new FunctionCall
+        js.setTarget(expToJS(e))
+        js.setArguments(es.map(expToJS).asJava)
+        js
+      }
     case _ =>
       val js = new KeywordLiteral
       js.setType(Token.NULL)
