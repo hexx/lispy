@@ -37,10 +37,10 @@ package object rhino {
       js
     // case Quote(e) => e
     case If(test, conseq, alt) =>
-      val js = new IfStatement
-      js.setCondition(expToJS(test))
-      js.setThenPart(expToJS(conseq))
-      js.setElsePart(expToJS(alt))
+      val js = new ConditionalExpression
+      js.setTestExpression(expToJS(test))
+      js.setTrueExpression(expToJS(conseq))
+      js.setFalseExpression(expToJS(alt))
       js
     case Set(v, e) => new Assignment(expToJS(v), expToJS(e))
     case Define(v, e) =>
