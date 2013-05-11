@@ -85,10 +85,7 @@ package object rhino {
         js.setArguments(es.map(expToJS).asJava)
         js
       }
-    case _ =>
-      val js = new KeywordLiteral
-      js.setType(Token.NULL)
-      js
+    case _ => new Undefined
   }
 
   def lispyToJS(lispy: String) = {
